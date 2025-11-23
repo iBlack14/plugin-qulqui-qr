@@ -87,25 +87,37 @@ final class Culqi_QR {
         require_once CULQI_QR_PLUGIN_DIR . 'includes/class-culqi-qr-logger.php';
         require_once CULQI_QR_PLUGIN_DIR . 'includes/class-culqi-qr-cache.php';
 
-        // Admin classes
+        // Admin classes (load if they exist)
         if (is_admin()) {
-            require_once CULQI_QR_PLUGIN_DIR . 'includes/admin/class-culqi-qr-admin.php';
-            require_once CULQI_QR_PLUGIN_DIR . 'includes/admin/class-culqi-qr-settings.php';
-            require_once CULQI_QR_PLUGIN_DIR . 'includes/admin/class-culqi-qr-analytics.php';
+            $this->load_file_if_exists('includes/admin/class-culqi-qr-admin.php');
+            $this->load_file_if_exists('includes/admin/class-culqi-qr-settings.php');
+            $this->load_file_if_exists('includes/admin/class-culqi-qr-analytics.php');
         }
 
         // Public classes
         require_once CULQI_QR_PLUGIN_DIR . 'includes/public/class-culqi-qr-shortcodes.php';
-        require_once CULQI_QR_PLUGIN_DIR . 'includes/public/class-culqi-qr-blocks.php';
+        $this->load_file_if_exists('includes/public/class-culqi-qr-blocks.php');
 
         // WooCommerce integration
         if (class_exists('WooCommerce')) {
             require_once CULQI_QR_PLUGIN_DIR . 'includes/woocommerce/class-culqi-qr-gateway.php';
         }
 
-        // Page builders
-        require_once CULQI_QR_PLUGIN_DIR . 'includes/integrations/class-culqi-qr-elementor.php';
-        require_once CULQI_QR_PLUGIN_DIR . 'includes/integrations/class-culqi-qr-divi.php';
+        // Page builders (load if they exist)
+        $this->load_file_if_exists('includes/integrations/class-culqi-qr-elementor.php');
+        $this->load_file_if_exists('includes/integrations/class-culqi-qr-divi.php');
+    }
+
+    /**
+     * Load file if it exists
+     *
+     * @param string $file Relative file path
+     */
+    private function load_file_if_exists($file) {
+        $filepath = CULQI_QR_PLUGIN_DIR . $file;
+        if (file_exists($filepath)) {
+            require_once $filepath;
+        }
     }
 
     /**
@@ -145,7 +157,7 @@ final class Culqi_QR {
      * Initialize Gutenberg blocks
      */
     public function init_blocks() {
-        if (function_exists('register_block_type')) {
+        if (function_exists('register_block_type') && class_exists('Culqi_QR_Blocks')) {
             new Culqi_QR_Blocks();
         }
     }
@@ -154,9 +166,12 @@ final class Culqi_QR {
      * Register REST API routes
      */
     public function register_rest_routes() {
-        require_once CULQI_QR_PLUGIN_DIR . 'includes/api/class-culqi-qr-rest-api.php';
-        $rest_api = new Culqi_QR_REST_API();
-        $rest_api->register_routes();
+        $rest_api_file = CULQI_QR_PLUGIN_DIR . 'includes/api/class-culqi-qr-rest-api.php';
+        if (file_exists($rest_api_file)) {
+            require_once $rest_api_file;
+            $rest_api = new Culqi_QR_REST_API();
+            $rest_api->register_routes();
+        }
     }
 
     /**
