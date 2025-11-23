@@ -96,6 +96,7 @@ final class Culqi_QR {
 
         // Public classes
         require_once CULQI_QR_PLUGIN_DIR . 'includes/public/class-culqi-qr-shortcodes.php';
+        require_once CULQI_QR_PLUGIN_DIR . 'includes/public/class-culqi-qr-assets.php';
         $this->load_file_if_exists('includes/public/class-culqi-qr-blocks.php');
 
         // WooCommerce integration
