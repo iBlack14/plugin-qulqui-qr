@@ -3,7 +3,7 @@
  * Plugin Name: Culqi QR - Pagos con QR
  * Plugin URI: https://github.com/iBlack14/plugin-qulqui-qr
  * Description: El plugin más completo para integrar pagos QR de Culqi en WordPress, WooCommerce y más. Multiplataforma y fácil de usar.
- * Version: 0.1.2
+ * Version: 0.1.3
  * Author: iBlack14
  * Author URI: https://github.com/iBlack14
  * License: MIT
@@ -21,7 +21,7 @@
 defined('ABSPATH') || exit;
 
 // Plugin constants
-define('CULQI_QR_VERSION', '0.1.2');
+define('CULQI_QR_VERSION', '0.1.3');
 define('CULQI_QR_PLUGIN_FILE', __FILE__);
 define('CULQI_QR_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CULQI_QR_PLUGIN_URL', plugin_dir_url(__FILE__));
@@ -141,6 +141,11 @@ final class Culqi_QR {
         // Initialize WooCommerce gateway
         if (class_exists('WooCommerce')) {
             add_filter('woocommerce_payment_gateways', array($this, 'add_gateway'));
+
+            // Show notice if API keys not configured
+            if (empty(get_option('culqi_qr_public_key')) || empty(get_option('culqi_qr_secret_key'))) {
+                add_action('admin_notices', array($this, 'api_keys_notice'));
+            }
         }
     }
 
@@ -151,8 +156,32 @@ final class Culqi_QR {
      * @return array
      */
     public function add_gateway($gateways) {
-        $gateways[] = 'Culqi_QR_Gateway';
+        if (class_exists('Culqi_QR_Gateway')) {
+            $gateways[] = 'Culqi_QR_Gateway';
+        }
         return $gateways;
+    }
+
+    /**
+     * Show admin notice if API keys not configured
+     */
+    public function api_keys_notice() {
+        if (get_current_screen()->id !== 'woocommerce_page_wc-settings') {
+            return;
+        }
+        ?>
+        <div class="notice notice-warning">
+            <p>
+                <strong><?php esc_html_e('Culqi QR:', 'culqi-qr'); ?></strong>
+                <?php
+                printf(
+                    esc_html__('Para que el método de pago funcione, configura tus API keys en %s', 'culqi-qr'),
+                    '<a href="' . esc_url(admin_url('admin.php?page=culqi-qr-settings')) . '">Culqi QR → Settings</a>'
+                );
+                ?>
+            </p>
+        </div>
+        <?php
     }
 
     /**

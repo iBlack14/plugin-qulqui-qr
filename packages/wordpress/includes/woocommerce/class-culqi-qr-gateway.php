@@ -17,10 +17,10 @@ class Culqi_QR_Gateway extends WC_Payment_Gateway {
      */
     public function __construct() {
         $this->id = 'culqi_qr';
-        $this->icon = CULQI_QR_PLUGIN_URL . 'assets/images/culqi-logo.png';
+        $this->icon = '';
         $this->has_fields = false;
         $this->method_title = __('Culqi QR', 'culqi-qr');
-        $this->method_description = __('Accept payments via Culqi QR codes', 'culqi-qr');
+        $this->method_description = __('Acepta pagos escaneando códigos QR con la app de Culqi', 'culqi-qr');
 
         // Supports
         $this->supports = array(
@@ -49,23 +49,23 @@ class Culqi_QR_Gateway extends WC_Payment_Gateway {
     public function init_form_fields() {
         $this->form_fields = array(
             'enabled' => array(
-                'title' => __('Enable/Disable', 'culqi-qr'),
+                'title' => __('Activar/Desactivar', 'culqi-qr'),
                 'type' => 'checkbox',
-                'label' => __('Enable Culqi QR Payment', 'culqi-qr'),
-                'default' => 'no',
+                'label' => __('Activar pagos con Culqi QR', 'culqi-qr'),
+                'default' => 'yes',
             ),
             'title' => array(
-                'title' => __('Title', 'culqi-qr'),
+                'title' => __('Título', 'culqi-qr'),
                 'type' => 'text',
-                'description' => __('Payment method title that customers will see during checkout', 'culqi-qr'),
-                'default' => __('QR Payment', 'culqi-qr'),
+                'description' => __('Título del método de pago que verán los clientes', 'culqi-qr'),
+                'default' => __('Pago con QR (Culqi)', 'culqi-qr'),
                 'desc_tip' => true,
             ),
             'description' => array(
-                'title' => __('Description', 'culqi-qr'),
+                'title' => __('Descripción', 'culqi-qr'),
                 'type' => 'textarea',
-                'description' => __('Payment method description that customers will see during checkout', 'culqi-qr'),
-                'default' => __('Scan the QR code with your Culqi app to complete the payment', 'culqi-qr'),
+                'description' => __('Descripción que verán los clientes en el checkout', 'culqi-qr'),
+                'default' => __('Escanea el código QR con tu app de Culqi para completar el pago de forma rápida y segura', 'culqi-qr'),
                 'desc_tip' => true,
             ),
             'instructions' => array(
