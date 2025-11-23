@@ -161,6 +161,7 @@ class Culqi_QR_Admin {
             update_option('culqi_qr_webhook_secret', sanitize_text_field($_POST['webhook_secret']));
             update_option('culqi_qr_currency', sanitize_text_field($_POST['currency']));
             update_option('culqi_qr_debug', sanitize_text_field($_POST['debug']));
+            update_option('culqi_qr_demo_mode', isset($_POST['demo_mode']) ? 'yes' : 'no');
 
             echo '<div class="notice notice-success"><p>' . esc_html__('Settings saved!', 'culqi-qr') . '</p></div>';
         }
@@ -244,6 +245,22 @@ class Culqi_QR_Admin {
                         <td>
                             <input type="checkbox" name="debug" id="debug" value="yes" <?php checked($debug, 'yes'); ?> />
                             <label for="debug"><?php esc_html_e('Enable debug logging', 'culqi-qr'); ?></label>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <th scope="row">
+                            <label for="demo_mode"><?php esc_html_e('Modo Demo', 'culqi-qr'); ?></label>
+                        </th>
+                        <td>
+                            <?php $demo_mode = get_option('culqi_qr_demo_mode', 'no'); ?>
+                            <input type="checkbox" name="demo_mode" id="demo_mode" value="yes" <?php checked($demo_mode, 'yes'); ?> />
+                            <label for="demo_mode">
+                                <?php esc_html_e('Activar modo demo', 'culqi-qr'); ?>
+                            </label>
+                            <p class="description">
+                                ⚠️ <?php esc_html_e('Genera QRs de prueba sin conectar a Culqi. Usar solo para pruebas de interfaz.', 'culqi-qr'); ?>
+                            </p>
                         </td>
                     </tr>
                 </table>

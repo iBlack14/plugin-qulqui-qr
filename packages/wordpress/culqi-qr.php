@@ -3,7 +3,7 @@
  * Plugin Name: Culqi QR - Pagos con QR
  * Plugin URI: https://github.com/iBlack14/plugin-qulqui-qr
  * Description: El plugin más completo para integrar pagos QR de Culqi en WordPress, WooCommerce y más. Multiplataforma y fácil de usar.
- * Version: 0.1.4
+ * Version: 0.1.5
  * Author: iBlack14
  * Author URI: https://github.com/iBlack14
  * License: MIT
@@ -21,7 +21,7 @@
 defined('ABSPATH') || exit;
 
 // Plugin constants
-define('CULQI_QR_VERSION', '0.1.4');
+define('CULQI_QR_VERSION', '0.1.5');
 define('CULQI_QR_PLUGIN_FILE', __FILE__);
 define('CULQI_QR_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CULQI_QR_PLUGIN_URL', plugin_dir_url(__FILE__));
@@ -86,6 +86,7 @@ final class Culqi_QR {
         require_once CULQI_QR_PLUGIN_DIR . 'includes/class-culqi-qr-webhook.php';
         require_once CULQI_QR_PLUGIN_DIR . 'includes/class-culqi-qr-logger.php';
         require_once CULQI_QR_PLUGIN_DIR . 'includes/class-culqi-qr-cache.php';
+        require_once CULQI_QR_PLUGIN_DIR . 'includes/class-culqi-qr-demo.php';
 
         // Admin classes (load if they exist)
         if (is_admin()) {

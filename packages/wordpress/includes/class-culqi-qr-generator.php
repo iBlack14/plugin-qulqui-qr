@@ -34,6 +34,11 @@ class Culqi_QR_Generator {
             return new WP_Error('invalid_amount', __('Invalid amount', 'culqi-qr'));
         }
 
+        // Check if demo mode is enabled
+        if (class_exists('Culqi_QR_Demo') && Culqi_QR_Demo::is_enabled()) {
+            return Culqi_QR_Demo::generate_demo_qr($args);
+        }
+
         // Create QR via API
         $result = culqi_qr()->api()->create_qr($args);
 
