@@ -3,7 +3,7 @@
  * Plugin Name: Culqi QR - Pagos con QR
  * Plugin URI: https://github.com/iBlack14/plugin-qulqui-qr
  * Description: El plugin más completo para integrar pagos QR de Culqi en WordPress, WooCommerce y más. Multiplataforma y fácil de usar.
- * Version: 0.1.3
+ * Version: 0.1.4
  * Author: iBlack14
  * Author URI: https://github.com/iBlack14
  * License: MIT
@@ -21,7 +21,7 @@
 defined('ABSPATH') || exit;
 
 // Plugin constants
-define('CULQI_QR_VERSION', '0.1.3');
+define('CULQI_QR_VERSION', '0.1.4');
 define('CULQI_QR_PLUGIN_FILE', __FILE__);
 define('CULQI_QR_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CULQI_QR_PLUGIN_URL', plugin_dir_url(__FILE__));
@@ -166,19 +166,16 @@ final class Culqi_QR {
      * Show admin notice if API keys not configured
      */
     public function api_keys_notice() {
-        if (get_current_screen()->id !== 'woocommerce_page_wc-settings') {
+        $screen = get_current_screen();
+        if (!$screen || $screen->id !== 'woocommerce_page_wc-settings') {
             return;
         }
         ?>
         <div class="notice notice-warning">
             <p>
-                <strong><?php esc_html_e('Culqi QR:', 'culqi-qr'); ?></strong>
-                <?php
-                printf(
-                    esc_html__('Para que el método de pago funcione, configura tus API keys en %s', 'culqi-qr'),
-                    '<a href="' . esc_url(admin_url('admin.php?page=culqi-qr-settings')) . '">Culqi QR → Settings</a>'
-                );
-                ?>
+                <strong>Culqi QR:</strong>
+                Para que el método de pago funcione, configura tus API keys en
+                <a href="<?php echo esc_url(admin_url('admin.php?page=culqi-qr-settings')); ?>">Culqi QR → Settings</a>
             </p>
         </div>
         <?php
