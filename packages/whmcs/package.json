@@ -1,0 +1,34 @@
+{
+  "name": "@culqi/qr-whmcs",
+  "version": "1.0.0",
+  "description": "Módulo de gateway de pago con códigos QR de Culqi para WHMCS",
+  "main": "modules/gateways/culqiqr.php",
+  "keywords": [
+    "culqi",
+    "qr",
+    "payment",
+    "gateway",
+    "whmcs",
+    "peru",
+    "payments",
+    "ecommerce"
+  ],
+  "author": "iBlack14",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/iBlack14/plugin-qulqui-qr.git",
+    "directory": "packages/whmcs"
+  },
+  "bugs": {
+    "url": "https://github.com/iBlack14/plugin-qulqui-qr/issues"
+  },
+  "homepage": "https://github.com/iBlack14/plugin-qulqui-qr#readme",
+  "engines": {
+    "php": ">=7.4",
+    "whmcs": ">=8.0"
+  },
+  "scripts": {
+    "package": "zip -r culqi-qr-whmcs.zip modules/ *.md LICENSE -x '*.git*'"
+  }
+}
