@@ -7,7 +7,7 @@
 ![WordPress](https://img.shields.io/badge/WordPress-6.0+-blue.svg)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)
 
-**El plugin más completo para integrar pagos QR de Culqi en WordPress y otras plataformas**
+**El plugin más completo para integrar pagos QR de Culqi en WordPress, WHMCS y otras plataformas**
 
 [Documentación](#) • [Demo](#) • [Instalación](#instalación) • [Contribuir](#)
 
@@ -20,7 +20,8 @@
 ### 🏆 Ventajas sobre otros plugins de Culqi:
 
 - ✅ **WordPress Native**: Integración completa con WooCommerce y WordPress
-- ✅ **Multiplataforma**: WordPress, React, Vue, Angular, React Native, Flutter
+- ✅ **WHMCS Gateway**: Módulo completo de pago para WHMCS con QR
+- ✅ **Multiplataforma**: WordPress, WHMCS, React, Vue, Angular, React Native, Flutter
 - ✅ **TypeScript**: Tipado completo para mejor experiencia de desarrollo
 - ✅ **Modular**: Usa solo los módulos que necesitas
 - ✅ **Gutenberg Blocks**: Bloques personalizados para mostrar QR
@@ -35,12 +36,14 @@
 - ✅ **Shortcodes**: Múltiples shortcodes para cualquier necesidad
 - ✅ **REST API**: API completa para integraciones custom
 - ✅ **Logs**: Sistema de logs detallado para debugging
+- ✅ **Reembolsos**: Procesamiento de reembolsos en WHMCS
 
 ## 📦 Paquetes Disponibles
 
 ```
 culqi-qr-monorepo/
 ├── 🔌 @culqi/qr-wordpress      - Plugin para WordPress/WooCommerce
+├── 💳 @culqi/qr-whmcs          - Módulo de pago para WHMCS
 ├── 📦 @culqi/qr-core           - SDK Core (TypeScript)
 ├── ⚛️  @culqi/qr-react          - React SDK con hooks
 ├── 💚 @culqi/qr-vue            - Vue 3 SDK con composables
@@ -68,6 +71,21 @@ culqi-qr-monorepo/
 
 # Opción 3: Vía Composer
 composer require culqi/qr-wordpress
+```
+
+### WHMCS
+
+```bash
+# Instalación manual
+1. Descarga culqi-qr-whmcs-v1.0.0.zip
+2. Extrae los archivos
+3. Copia culqiqr.php a /modules/gateways/
+4. Copia callback/culqiqr.php a /modules/gateways/callback/
+5. Activa el módulo en Setup → Payments → Payment Gateways
+6. Configura tus API Keys de Culqi
+
+# Ver documentación completa
+packages/whmcs/README.md
 ```
 
 ### NPM (Para desarrolladores)
