@@ -1,25 +1,18 @@
 <?php
 /**
- * Culqi QR Payment Gateway Module for WHMCS - SANDBOX FIX VERSION
+ * Culqi QR Payment Gateway Module for WHMCS
  *
- * Esta versión incluye un workaround para servidores que bloquean api-sandbox.culqi.com
+ * Módulo de gateway de pago con códigos QR de Culqi para WHMCS.
+ * Usa el endpoint oficial api.culqi.com para sandbox y producción.
  *
  * @package CulqiQR
  * @author iBlack14
- * @version 1.0.1
+ * @version 1.2.0
  */
 
 if (!defined("WHMCS")) {
     die("This file cannot be accessed directly");
 }
-
-/**
- * IMPORTANTE: Configuración del workaround para DNS
- *
- * Si tu servidor bloquea api-sandbox.culqi.com, descomentar la siguiente línea
- * y agregar la IP actual del servidor sandbox de Culqi
- */
-// define('CULQI_SANDBOX_IP', '52.222.136.9'); // Actualiza con la IP correcta
 
 /**
  * Definir metadata del módulo de gateway
@@ -68,13 +61,6 @@ function culqiqr_config()
             'Default' => '',
             'Description' => 'Ingrese su Culqi Secret Key',
         ),
-        'sandboxIP' => array(
-            'FriendlyName' => 'Sandbox IP (Opcional)',
-            'Type' => 'text',
-            'Size' => '20',
-            'Default' => '',
-            'Description' => 'Si el sandbox está bloqueado, ingresa la IP: Ejemplo: 52.222.136.9',
-        ),
         'currency' => array(
             'FriendlyName' => 'Moneda',
             'Type' => 'dropdown',
@@ -116,7 +102,6 @@ function culqiqr_link($params)
     $environment = $params['environment'];
     $publicKey = $params['publicKey'];
     $secretKey = $params['secretKey'];
-    $sandboxIP = $params['sandboxIP'];
     $currency = $params['currency'];
     $expirationMinutes = $params['expirationMinutes'];
     $testMode = $params['testMode'];
@@ -145,7 +130,7 @@ function culqiqr_link($params)
 
     // Crear orden en Culqi
     try {
-        $culqiApi = new CulqiQR_API_Fixed($secretKey, $environment, $sandboxIP);
+        $culqiApi = new CulqiQR_API($secretKey, $environment);
 
         // Calcular timestamp de expiración
         $expirationTime = time() + ($expirationMinutes * 60);
@@ -302,10 +287,9 @@ function culqiqr_refund($params)
     $refundAmount = $params['amount'];
     $secretKey = $params['secretKey'];
     $environment = $params['environment'];
-    $sandboxIP = $params['sandboxIP'];
 
     try {
-        $culqiApi = new CulqiQR_API_Fixed($secretKey, $environment, $sandboxIP);
+        $culqiApi = new CulqiQR_API($secretKey, $environment);
 
         $refundData = array(
             'amount' => (int)($refundAmount * 100),
@@ -360,24 +344,22 @@ function culqiqr_saveTransaction($invoiceId, $transactionId, $orderId, $status)
 }
 
 /**
- * Clase API de Culqi con FIX para DNS
+ * Clase API de Culqi
  */
-class CulqiQR_API_Fixed
+class CulqiQR_API
 {
     private $secretKey;
     private $apiBase;
-    private $sandboxIP;
     private $environment;
 
-    public function __construct($secretKey, $environment = 'sandbox', $sandboxIP = '')
+    public function __construct($secretKey, $environment = 'sandbox')
     {
         $this->secretKey = $secretKey;
         $this->environment = $environment;
-        $this->sandboxIP = $sandboxIP;
 
-        $this->apiBase = ($environment === 'production')
-            ? 'https://api.culqi.com/v2/'
-            : 'https://api-sandbox.culqi.com/v2/';
+        // Culqi usa el mismo endpoint para sandbox y producción
+        // La diferencia está en las API keys (test vs live)
+        $this->apiBase = 'https://api.culqi.com/v2/';
     }
 
     /**

@@ -293,9 +293,9 @@ class CulqiQR_API
     public function __construct($secretKey, $environment = 'sandbox')
     {
         $this->secretKey = $secretKey;
-        $this->apiBase = ($environment === 'production')
-            ? 'https://api.culqi.com/v2/'
-            : 'https://api-sandbox.culqi.com/v2/';
+        // Culqi usa el mismo endpoint para sandbox y producción
+        // La diferencia está en las API keys (test vs live)
+        $this->apiBase = 'https://api.culqi.com/v2/';
     }
 
     public function getOrder($orderId)
