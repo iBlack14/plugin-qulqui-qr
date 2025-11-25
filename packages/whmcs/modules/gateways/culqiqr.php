@@ -1,15 +1,12 @@
 <?php
 /**
- * Culqi QR Payment Gateway Module for WHMCS
+ * Culqi QR Payment Gateway Module for WHMCS - SANDBOX FIX VERSION
  *
- * Este módulo permite procesar pagos a través de códigos QR de Culqi en WHMCS.
+ * Esta versión incluye un workaround para servidores que bloquean api-sandbox.culqi.com
  *
  * @package CulqiQR
  * @author iBlack14
- * @copyright Copyright (c) 2024
- * @license MIT
- * @version 1.0.0
- * @link https://github.com/iBlack14/plugin-qulqui-qr
+ * @version 1.0.1
  */
 
 if (!defined("WHMCS")) {
@@ -17,9 +14,15 @@ if (!defined("WHMCS")) {
 }
 
 /**
- * Definir metadata del módulo de gateway
+ * IMPORTANTE: Configuración del workaround para DNS
  *
- * @return array
+ * Si tu servidor bloquea api-sandbox.culqi.com, descomentar la siguiente línea
+ * y agregar la IP actual del servidor sandbox de Culqi
+ */
+// define('CULQI_SANDBOX_IP', '52.222.136.9'); // Actualiza con la IP correcta
+
+/**
+ * Definir metadata del módulo de gateway
  */
 function culqiqr_MetaData()
 {
@@ -33,8 +36,6 @@ function culqiqr_MetaData()
 
 /**
  * Definir parámetros de configuración del gateway
- *
- * @return array
  */
 function culqiqr_config()
 {
@@ -66,6 +67,13 @@ function culqiqr_config()
             'Size' => '50',
             'Default' => '',
             'Description' => 'Ingrese su Culqi Secret Key',
+        ),
+        'sandboxIP' => array(
+            'FriendlyName' => 'Sandbox IP (Opcional)',
+            'Type' => 'text',
+            'Size' => '20',
+            'Default' => '',
+            'Description' => 'Si el sandbox está bloqueado, ingresa la IP: Ejemplo: 52.222.136.9',
         ),
         'currency' => array(
             'FriendlyName' => 'Moneda',
@@ -101,9 +109,6 @@ function culqiqr_config()
 
 /**
  * Generar link de pago
- *
- * @param array $params Parámetros del gateway
- * @return string HTML del formulario de pago
  */
 function culqiqr_link($params)
 {
@@ -111,6 +116,7 @@ function culqiqr_link($params)
     $environment = $params['environment'];
     $publicKey = $params['publicKey'];
     $secretKey = $params['secretKey'];
+    $sandboxIP = $params['sandboxIP'];
     $currency = $params['currency'];
     $expirationMinutes = $params['expirationMinutes'];
     $testMode = $params['testMode'];
@@ -119,24 +125,15 @@ function culqiqr_link($params)
     $invoiceId = $params['invoiceid'];
     $description = $params['description'];
     $amount = $params['amount'];
-    $currencyCode = $params['currency'];
 
     // Información del cliente
     $firstname = $params['clientdetails']['firstname'];
     $lastname = $params['clientdetails']['lastname'];
     $email = $params['clientdetails']['email'];
-    $address1 = $params['clientdetails']['address1'];
-    $city = $params['clientdetails']['city'];
-    $state = $params['clientdetails']['state'];
-    $postcode = $params['clientdetails']['postcode'];
-    $country = $params['clientdetails']['country'];
     $phone = $params['clientdetails']['phonenumber'];
 
     // URLs del sistema
-    $systemUrl = $params['systemurl'];
     $returnUrl = $params['returnurl'];
-    $langPayNow = $params['langpaynow'];
-    $moduleDisplayName = $params['name'];
 
     // Validar configuración
     if (empty($secretKey) || empty($publicKey)) {
@@ -148,13 +145,13 @@ function culqiqr_link($params)
 
     // Crear orden en Culqi
     try {
-        $culqiApi = new CulqiQR_API($secretKey, $environment);
+        $culqiApi = new CulqiQR_API_Fixed($secretKey, $environment, $sandboxIP);
 
         // Calcular timestamp de expiración
         $expirationTime = time() + ($expirationMinutes * 60);
 
         $orderData = array(
-            'amount' => (int)($amount * 100), // Convertir a céntimos
+            'amount' => (int)($amount * 100),
             'currency_code' => $currency,
             'description' => "Factura #{$invoiceId} - {$description}",
             'order_number' => $invoiceId,
@@ -178,7 +175,6 @@ function culqiqr_link($params)
             // Guardar información en la base de datos
             culqiqr_saveTransaction($invoiceId, $transactionId, $order['id'], 'pending');
 
-            // Generar HTML del código QR
             $qrCode = $order['qr_code'];
             $orderId = $order['id'];
 
@@ -222,8 +218,8 @@ function culqiqr_link($params)
 
             <script>
             (function() {
-                var checkInterval = 5000; // Verificar cada 5 segundos
-                var maxAttempts = ' . (($expirationMinutes * 60) / 5) . '; // Intentos basados en tiempo de expiración
+                var checkInterval = 5000;
+                var maxAttempts = ' . (($expirationMinutes * 60) / 5) . ';
                 var attempts = 0;
                 var orderId = "' . $orderId . '";
                 var invoiceId = "' . $invoiceId . '";
@@ -237,7 +233,6 @@ function culqiqr_link($params)
 
                     attempts++;
 
-                    // Hacer petición AJAX para verificar el estado
                     var xhr = new XMLHttpRequest();
                     xhr.open("GET", "modules/gateways/callback/culqiqr.php?action=check&invoice_id=" + invoiceId + "&order_id=" + orderId, true);
                     xhr.onreadystatechange = function() {
@@ -255,7 +250,6 @@ function culqiqr_link($params)
                                 document.getElementById("culqi-payment-status-" + orderId).innerHTML =
                                     \'<div class="alert alert-danger"><strong>Pago fallido.</strong> Por favor, intente nuevamente.</div>\';
                             } else {
-                                // Continuar verificando
                                 setTimeout(checkPaymentStatus, checkInterval);
                             }
                         }
@@ -263,7 +257,6 @@ function culqiqr_link($params)
                     xhr.send();
                 }
 
-                // Iniciar verificación
                 setTimeout(checkPaymentStatus, checkInterval);
             })();
             </script>
@@ -302,9 +295,6 @@ function culqiqr_link($params)
 
 /**
  * Procesar reembolso
- *
- * @param array $params Parámetros del gateway
- * @return array Estado del reembolso
  */
 function culqiqr_refund($params)
 {
@@ -312,9 +302,10 @@ function culqiqr_refund($params)
     $refundAmount = $params['amount'];
     $secretKey = $params['secretKey'];
     $environment = $params['environment'];
+    $sandboxIP = $params['sandboxIP'];
 
     try {
-        $culqiApi = new CulqiQR_API($secretKey, $environment);
+        $culqiApi = new CulqiQR_API_Fixed($secretKey, $environment, $sandboxIP);
 
         $refundData = array(
             'amount' => (int)($refundAmount * 100),
@@ -338,18 +329,12 @@ function culqiqr_refund($params)
 }
 
 /**
- * Guardar transacción en la base de datos
- *
- * @param int $invoiceId ID de la factura
- * @param string $transactionId ID de transacción único
- * @param string $orderId ID de orden de Culqi
- * @param string $status Estado de la transacción
+ * Guardar transacción
  */
 function culqiqr_saveTransaction($invoiceId, $transactionId, $orderId, $status)
 {
     $table = 'mod_culqiqr_transactions';
 
-    // Crear tabla si no existe
     $createTable = "CREATE TABLE IF NOT EXISTS `{$table}` (
         `id` int(10) NOT NULL AUTO_INCREMENT,
         `invoice_id` int(10) NOT NULL,
@@ -366,7 +351,6 @@ function culqiqr_saveTransaction($invoiceId, $transactionId, $orderId, $status)
 
     full_query($createTable);
 
-    // Insertar transacción
     $insert = "INSERT INTO `{$table}`
         (invoice_id, transaction_id, order_id, status, created_at, updated_at)
         VALUES
@@ -376,16 +360,21 @@ function culqiqr_saveTransaction($invoiceId, $transactionId, $orderId, $status)
 }
 
 /**
- * Clase API de Culqi
+ * Clase API de Culqi con FIX para DNS
  */
-class CulqiQR_API
+class CulqiQR_API_Fixed
 {
     private $secretKey;
     private $apiBase;
+    private $sandboxIP;
+    private $environment;
 
-    public function __construct($secretKey, $environment = 'sandbox')
+    public function __construct($secretKey, $environment = 'sandbox', $sandboxIP = '')
     {
         $this->secretKey = $secretKey;
+        $this->environment = $environment;
+        $this->sandboxIP = $sandboxIP;
+
         $this->apiBase = ($environment === 'production')
             ? 'https://api.culqi.com/v2/'
             : 'https://api-sandbox.culqi.com/v2/';
@@ -416,7 +405,7 @@ class CulqiQR_API
     }
 
     /**
-     * Hacer petición a la API
+     * Hacer petición a la API con workaround para DNS
      */
     private function request($endpoint, $method = 'GET', $data = null)
     {
@@ -432,6 +421,14 @@ class CulqiQR_API
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+
+        // WORKAROUND: Si hay IP de sandbox configurada y estamos en sandbox
+        if ($this->environment === 'sandbox' && !empty($this->sandboxIP)) {
+            // Forzar resolución DNS a la IP configurada
+            curl_setopt($ch, CURLOPT_RESOLVE, array(
+                "api-sandbox.culqi.com:443:{$this->sandboxIP}"
+            ));
+        }
 
         if ($method === 'POST') {
             curl_setopt($ch, CURLOPT_POST, true);
